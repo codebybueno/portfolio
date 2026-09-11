@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Portfólio | Análise de Sistemas & Python</title>
 
+    <!-- Inclusão dos estilos do Stlite (permite rodar Streamlit diretamente no navegador via WebAssembly) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.css" />
 
     <style>
+      /* =========================================================
+         ESTILOS DO LOADER INICIAL (Tela de carregamento do Stlite)
+         ========================================================= */
       #custom-loader {
         position: fixed;
         top: 0;
@@ -27,6 +31,7 @@
         box-sizing: border-box;
       }
 
+      /* Animação do Spinner circular de carregamento */
       .spinner {
         width: 44px;
         height: 44px;
@@ -60,17 +65,21 @@
   </head>
   <body style="margin: 0; background-color: #0f172a;">
 
+    <!-- Elemento visual do Loader antes do Streamlit iniciar -->
     <div id="custom-loader">
       <div class="spinner"></div>
       <h2 class="loader-title">Carregando Portfólio...</h2>
       <p class="loader-text">Inicializando ambiente Python no seu navegador.</p>
     </div>
 
+    <!-- Ponto onde a aplicação Streamlit via Stlite será injetada -->
     <div id="root"></div>
 
+    <!-- Script principal do Stlite -->
     <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.js"></script>
 
     <script>
+      /* Função para remover o loader suavemente assim que a app carregar */
       function hideLoader() {
         const loader = document.getElementById('custom-loader');
         if (loader && loader.style.opacity !== '0') {
@@ -82,6 +91,7 @@
         }
       }
 
+      // Observa quando o componente '.stApp' aparece na DOM para ocultar o loader
       const observer = new MutationObserver(() => {
         if (document.querySelector('.stApp')) {
           hideLoader();
@@ -90,8 +100,12 @@
       });
       observer.observe(document.body, { childList: true, subtree: true });
 
+      // Fallback de segurança: oculta o loader após 7 segundos caso ocorra lentidão
       setTimeout(hideLoader, 7000);
 
+      /* =========================================================
+         CONFIGURAÇÃO E EXECUÇÃO DO SCRIPT PYTHON (Streamlit App)
+         ========================================================= */
       stlite.mount({
         requirements: ["streamlit", "requests"],
         entrypoint: "app.py",
@@ -100,13 +114,44 @@
 import streamlit as st
 import requests
 
+# Configurações iniciais da página do Streamlit
 st.set_page_config(
     page_title="Portfólio | Análise de Sistemas & Python",
     page_icon="💡",
     layout="centered"
 )
 
-# URLs configuradas para o repositório codebybueno/portfolio
+# Gerenciamento de Estado: Inicializa o Tema (Escuro por padrão)
+if "theme_mode" not in st.session_state:
+    st.session_state.theme_mode = "🌙 Escuro"
+
+# Top Bar contendo o Seletor de Tema alinhado à direita
+col_space, col_toggle = st.columns([5, 2])
+with col_toggle:
+    theme_option = st.selectbox(
+        "Tema",
+        ["🌙 Escuro", "☀️ Claro"],
+        index=0 if st.session_state.theme_mode == "🌙 Escuro" else 1,
+        label_visibility="collapsed"
+    )
+    if theme_option != st.session_state.theme_mode:
+        st.session_state.theme_mode = theme_option
+        st.rerun()
+
+is_dark = st.session_state.theme_mode == "🌙 Escuro"
+
+# =========================================================
+# DESIGN TOKENS (Paleta de cores dinâmica baseada no tema)
+# =========================================================
+bg_color = "#0f172a" if is_dark else "#f8fafc"
+text_color = "#f8fafc" if is_dark else "#0f172a"
+card_bg = "#1e293b" if is_dark else "#ffffff"
+card_border = "#334155" if is_dark else "#e2e8f0"
+desc_color = "#cbd5e1" if is_dark else "#475569"
+sub_color = "#94a3b8" if is_dark else "#64748b"
+header_bg = "#0f172a" if is_dark else "#ffffff"
+
+# URL base do repositório no GitHub para buscar as imagens do portfólio
 RAW_BASE = "https://raw.githubusercontent.com/codebybueno/portfolio/main/assets/"
 
 IMAGES = {
@@ -124,139 +169,151 @@ IMAGES = {
     "docflow_mobile": RAW_BASE + "docflow_mobile.jpg",
 }
 
-st.markdown("""
+# =========================================================
+# ESTILOS CSS CUSTOMIZADOS (Injetados via Streamlit Markdown)
+# =========================================================
+st.markdown(f"""
     <style>
-    .stApp {
-        background-color: #0f172a;
-        color: #f8fafc;
-    }
+    /* Estilização global da aplicação */
+    .stApp {{
+        background-color: {bg_color} !important;
+        color: {text_color} !important;
+    }}
 
-    .block-container {
+    [data-testid="stHeader"] {{
+        background-color: {header_bg} !important;
+    }}
+
+    .block-container {{
         max-width: 960px !important;
-        padding-top: 2rem !important;
+        padding-top: 4.5rem !important;
         padding-bottom: 2rem !important;
-    }
+    }}
     
-    h1 {
+    h1 {{
         font-size: 1.85rem !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em;
         line-height: 1.25 !important;
-    }
+        color: {text_color} !important;
+    }}
     
-    h2, h3 {
-        color: #f1f5f9 !important;
-    }
+    h2, h3 {{
+        color: {text_color} !important;
+    }}
 
-    /* AJUSTE GLOBAL DE RESPONSIVIDADE PARA TODOS OS TÍTULOS NO MOBILE */
-    @media (max-width: 768px) {
-        h1 {
-            font-size: 1.5rem !important;
+    /* Seletor de tema responsivo (tamanho compacto fixo) */
+    [data-testid="stSelectbox"] {{
+        max-width: 150px !important;
+        margin-left: auto !important;
+    }}
+
+    /* Ajustes de tipografia e layout para telas menores (Mobile) */
+    @media (max-width: 768px) {{
+        h1 {{
+            font-size: 1.45rem !important;
             line-height: 1.2 !important;
-        }
-        h2, [data-testid="stSubheader"] h2 {
-            font-size: 1.25rem !important;
+        }}
+        h2, [data-testid="stSubheader"] h2 {{
+            font-size: 1.2rem !important;
             line-height: 1.3 !important;
-        }
-        h3, [data-testid="stSubheader"] h3, [data-testid="stMarkdownContainer"] h3 {
-            font-size: 1.1rem !important;
+        }}
+        h3, [data-testid="stSubheader"] h3, [data-testid="stMarkdownContainer"] h3 {{
+            font-size: 1.05rem !important;
             line-height: 1.35 !important;
             letter-spacing: -0.01em !important;
-        }
-    }
+        }}
+        [data-testid="stSelectbox"] {{
+            max-width: 130px !important;
+        }}
+    }}
 
-    /* CARD CONTAINER UNIFORME COM FLEXBOX */
-    [data-testid="stVerticalBlock"] > div[style*="border"] {
-        background-color: #1e293b !important;
-        border: 1px solid #334155 !important;
+    /* Padronização dos Cards de Projetos via Flexbox (Garante alturas alinhadas) */
+    [data-testid="stVerticalBlock"] > div[style*="border"] {{
+        background-color: {card_bg} !important;
+        border: 1px solid {card_border} !important;
         border-radius: 12px !important;
         padding: 16px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, { "0.2" if is_dark else "0.05" });
         box-sizing: border-box !important;
         height: 100% !important;
         min-height: 480px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-    }
+    }}
 
-    /* CONTAINER DA IMAGEM E FALLBACK DE MESMA ALTURA */
-    [data-testid="stImage"], .img-fallback {
+    /* Caixa exibida caso a imagem remota não esteja disponível */
+    .img-fallback {{
         height: 180px !important;
-        overflow: hidden !important;
-        border-radius: 8px !important;
-        border: 1px solid #334155 !important;
-        margin-bottom: 8px !important;
-    }
-
-    .img-fallback {
-        background-color: #0f172a;
+        background-color: {bg_color};
+        border: 1px solid {card_border};
+        border-radius: 8px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        color: #64748b;
+        color: {sub_color};
         font-size: 0.8rem;
         text-align: center;
         padding: 10px;
         box-sizing: border-box;
-    }
+        margin-bottom: 8px;
+    }}
 
-    [data-testid="stImage"] img {
-        height: 100% !important;
-        width: 100% !important;
-        object-fit: cover !important;
-        object-position: top !important;
-        transition: transform 0.2s ease, filter 0.2s ease !important;
-    }
-
-    [data-testid="stImage"] img:hover {
+    /* Efeito de zoom e brilho suave ao passar o mouse nas imagens dos cards */
+    .card-img-link img:hover {{
         filter: brightness(1.1) !important;
-        cursor: pointer !important;
-    }
+        transform: scale(1.01);
+    }}
+    .card-img-link img {{
+        transition: transform 0.2s ease, filter 0.2s ease !important;
+    }}
 
-    /* ALTURA FIXA E PADRONIZADA DO TEXTO DO CARD */
-    .card-desc {
+    /* Altura fixa para manter o alinhamento perfeito dos textos descritivos */
+    .card-desc {{
         min-height: 65px;
         font-size: 0.85rem;
-        color: #cbd5e1;
+        color: {desc_color};
         line-height: 1.45;
         margin-top: 6px;
         margin-bottom: 8px;
-    }
+    }}
 
-    .stTabs [data-baseweb="tab-list"] {
+    /* Customização elegante das abas de visualização (PC / Mobile) */
+    .stTabs [data-baseweb="tab-list"] {{
         gap: 6px;
         margin-bottom: 6px;
-    }
+    }}
 
-    .stTabs [data-baseweb="tab"] {
+    .stTabs [data-baseweb="tab"] {{
         height: 28px;
-        background-color: #0f172a;
+        background-color: {bg_color};
         border-radius: 6px;
-        color: #94a3b8;
+        color: {sub_color};
         font-size: 0.75rem;
         font-weight: 600;
         padding: 0px 8px;
-        border: 1px solid #334155;
-    }
+        border: 1px solid {card_border};
+    }}
 
-    .stTabs [aria-selected="true"] {
+    .stTabs [aria-selected="true"] {{
         background-color: #0284c7 !important;
         color: #ffffff !important;
         border-color: #38bdf8 !important;
-    }
+    }}
 
-    .badge-container {
+    /* Estilização dos Badges de Status (Produção / Desenvolvimento / Restrito) */
+    .badge-container {{
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
         gap: 6px !important;
         align-items: center !important;
         margin-bottom: 8px !important;
-    }
+    }}
 
-    .badge-prod {
+    .badge-prod {{
         background-color: rgba(34, 197, 94, 0.15);
         color: #4ade80;
         padding: 2px 6px;
@@ -264,9 +321,9 @@ st.markdown("""
         font-size: 0.68rem;
         font-weight: 600;
         white-space: nowrap;
-    }
+    }}
 
-    .badge-dev {
+    .badge-dev {{
         background-color: rgba(245, 158, 11, 0.15);
         color: #fbbf24;
         padding: 2px 6px;
@@ -274,29 +331,30 @@ st.markdown("""
         font-size: 0.68rem;
         font-weight: 600;
         white-space: nowrap;
-    }
+    }}
 
-    .badge-lock {
-        background-color: rgba(148, 163, 184, 0.15);
-        color: #cbd5e1;
+    .badge-lock {{
+        background-color: rgba(148, 163, 184, { "0.15" if is_dark else "0.2" });
+        color: { "#cbd5e1" if is_dark else "#475569" };
         padding: 2px 6px;
         border-radius: 12px;
         font-size: 0.68rem;
         font-weight: 600;
         white-space: nowrap;
-    }
+    }}
 
-    .badge-public {
+    .badge-public {{
         background-color: rgba(56, 189, 248, 0.15);
-        color: #38bdf8;
+        color: { "#38bdf8" if is_dark else "#0284c7" };
         padding: 2px 6px;
         border-radius: 12px;
         font-size: 0.68rem;
         font-weight: 600;
         white-space: nowrap;
-    }
+    }}
 
-    .stLinkButton > a {
+    /* Padronização dos botões de redirecionamento */
+    .stLinkButton > a {{
         background-color: #0284c7 !important;
         color: #ffffff !important;
         border: none !important;
@@ -305,43 +363,53 @@ st.markdown("""
         width: 100%;
         text-align: center;
         transition: background-color 0.2s ease;
-    }
-    .stLinkButton > a:hover {
+    }}
+    .stLinkButton > a:hover {{
         background-color: #0369a1 !important;
-    }
+    }}
 
-    .contact-link {
+    /* Estilo do botão de contato no rodapé */
+    .contact-link {{
         display: inline-block;
         margin-top: 10px;
         padding: 10px 20px;
-        background-color: #1e293b;
+        background-color: {card_bg};
         color: #38bdf8 !important;
-        border: 1px solid #334155;
+        border: 1px solid {card_border};
         border-radius: 20px;
         text-decoration: none !important;
         font-size: 0.88rem;
         font-weight: 600;
         transition: all 0.2s ease;
-    }
-    .contact-link:hover {
-        background-color: #334155;
+    }}
+    .contact-link:hover {{
+        background-color: {card_border};
         color: #7dd3fc !important;
         border-color: #38bdf8;
-    }
+    }}
     
-    .info-box {
-        background-color: rgba(30, 41, 59, 0.7);
+    /* Caixa informativa de avisos */
+    .info-box {{
+        background-color: {card_bg};
         border-left: 4px solid #38bdf8;
         padding: 10px 14px;
         border-radius: 0 8px 8px 0;
         font-size: 0.85rem;
-        color: #cbd5e1;
+        color: {desc_color};
         margin: 15px 0;
         line-height: 1.4;
-    }
+        border-top: 1px solid {card_border};
+        border-right: 1px solid {card_border};
+        border-bottom: 1px solid {card_border};
+    }}
     </style>
 """, unsafe_allow_html=True)
 
+# =========================================================
+# FUNÇÕES UTILITÁRIAS (Validação de imagens e renderização)
+# =========================================================
+
+# Cache para validar se a URL da imagem responde corretamente (Evita lentidão)
 @st.cache_data(ttl=3600)
 def is_valid_image(url):
     if not url:
@@ -352,13 +420,15 @@ def is_valid_image(url):
     except Exception:
         return False
 
+# Renderiza a imagem abrindo no tamanho original ao clicar, ou exibe fallback se falhar
 def render_image(url):
     if is_valid_image(url):
-        try:
-            st.image(url)
-            return
-        except Exception:
-            pass
+        st.markdown(f"""
+            <a href="{url}" target="_blank" class="card-img-link" title="Clique para abrir a imagem no tamanho original">
+                <img src="{url}" style="width: 100%; height: 180px; object-fit: cover; object-position: top; border-radius: 8px; border: 1px solid {card_border}; display: block;" />
+            </a>
+        """, unsafe_allow_html=True)
+        return
     
     st.markdown("""
         <div class='img-fallback'>
@@ -367,159 +437,145 @@ def render_image(url):
         </div>
     """, unsafe_allow_html=True)
 
-# Cabeçalho Principal
-st.markdown("<h1 style='text-align: center; color: #ffffff;'>Olá! Bem-vindo ao meu portfólio</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 0.95rem; line-height: 1.6;'>Formado em Análise e Desenvolvimento de Sistemas. Uso Python e Streamlit para criar automações e sistemas práticos voltados para a rotina da CME (Central de Material e Esterilização) e do hospital.</p>", unsafe_allow_html=True)
+# =========================================================
+# ESTRUTURA DE DADOS DOS PROJETOS (Arquitetura Data-Driven)
+# Facilita a manutenção, adição e remoção de projetos.
+# =========================================================
+PROJETOS_PRODUCAO = [
+    {
+        "title": "🏥 GAPP CME",
+        "status": "🟢 EM PRODUÇÃO", "s_class": "badge-prod",
+        "access": "🔒 RESTRITO", "a_class": "badge-lock",
+        "desc": "Aplicação central desenvolvida para apoiar a organização, controle e os fluxos de trabalho dentro da Central de Material e Esterilização.",
+        "url": "https://gappcccme.streamlit.app/",
+        "img_pc": IMAGES["gapp"], "img_mob": IMAGES["gapp_mobile"]
+    },
+    {
+        "title": "📋 CME Pedidos",
+        "status": "🟢 EM PRODUÇÃO", "s_class": "badge-prod",
+        "access": "🔒 RESTRITO", "a_class": "badge-lock",
+        "desc": "Sistema voltado para agilizar o controle, registro e o gerenciamento de pedidos de materiais e insumos.",
+        "url": "https://cmepedidos.streamlit.app/",
+        "img_pc": IMAGES["cmepedidos"], "img_mob": IMAGES["cmepedidos_mobile"]
+    },
+    {
+        "title": "🏢 Solicitação de Unidades",
+        "status": "🟢 EM PRODUÇÃO", "s_class": "badge-prod",
+        "access": "🔒 RESTRITO", "a_class": "badge-lock",
+        "desc": "Interface intuitiva projetada para facilitar as solicitações de materiais vindas das diversas unidades do hospital para a CME.",
+        "url": "https://solicitacaounidades.streamlit.app/",
+        "img_pc": IMAGES["solicitacao"], "img_mob": IMAGES["solicitacao_mobile"]
+    },
+    {
+        "title": "🏷️ Gerador ZPL",
+        "status": "🟢 EM PRODUÇÃO", "s_class": "badge-prod",
+        "access": "🌐 ACESSO LIVRE", "a_class": "badge-public",
+        "desc": "Ferramenta útil para geração e formatação de códigos ZPL (Zebra), facilitando a impressão de etiquetas de identificação.",
+        "url": "https://geradorzpl.streamlit.app/",
+        "img_pc": IMAGES["zpl"], "img_mob": IMAGES["zpl_mobile"]
+    }
+]
+
+PROJETOS_DESENVOLVIMENTO = [
+    {
+        "title": "🔍 Track CME",
+        "status": "🚧 DESENVOLVIMENTO", "s_class": "badge-dev",
+        "access": "🔒 RESTRITO", "a_class": "badge-lock",
+        "desc": "Sistema focado no rastreamento e acompanhamento detalhado de itens e processos dentro da CME, aumentando o controle operacional.",
+        "url": "https://trackcme.streamlit.app/",
+        "img_pc": IMAGES["track"], "img_mob": IMAGES["track_mobile"]
+    },
+    {
+        "title": "📄 DocFlow",
+        "status": "🚧 DESENVOLVIMENTO", "s_class": "badge-dev",
+        "access": "🌐 ACESSO LIVRE", "a_class": "badge-public",
+        "desc": "Ferramenta projetada para automatizar a geração, organização e o fluxo de documentos e relatórios institucionais.",
+        "url": "https://docflowgenerator.streamlit.app/",
+        "img_pc": IMAGES["docflow"], "img_mob": IMAGES["docflow_mobile"]
+    }
+]
+
+# =========================================================
+# MONTAGEN DA INTERFACE (Renderização dos Componentes Visuais)
+# =========================================================
+
+# Cabeçalho Principal do Portfólio
+st.markdown("<h1 style='text-align: center;'>Olá! Bem-vindo ao meu portfólio</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: {sub_color}; font-size: 0.95rem; line-height: 1.6;'>Formado em Análise e Desenvolvimento de Sistemas. Uso Python e Streamlit para criar automações e sistemas práticos voltados para a rotina da CME (Central de Material e Esterilização) e do hospital.</p>", unsafe_allow_html=True)
 
 st.divider()
 
-# Sobre a iniciativa
+# Seção explicativa sobre a iniciativa
 st.subheader("👋 Sobre este espaço")
 st.write("Embora não atue formalmente na equipe de TI, sempre gostei de colocar a mão na massa para resolver problemas reais da rotina de trabalho. Estes são alguns dos sistemas que desenvolvi por conta própria para otimizar processos internos.")
 
-# Caixa informativa
+# Caixa informativa de avisos importantes
 st.markdown("""
 <div class='info-box'>
     🔒 <strong>Aviso de Acesso:</strong> Aplicações internas exigem login. <strong>Gerador ZPL</strong> e <strong>DocFlow</strong> estão abertos para testes.
 </div>
 """, unsafe_allow_html=True)
 
-# SEÇÃO 1: PROJETOS CONCLUÍDOS (EM PRODUÇÃO)
+# Função helper responsável por desenhar a grade de projetos dinamicamente em 2 colunas
+def render_project_grid(projects_list):
+    for i in range(0, len(projects_list), 2):
+        col1, col2 = st.columns(2)
+        
+        # Renderização do primeiro card da linha
+        with col1:
+            p = projects_list[i]
+            with st.container(border=True):
+                st.markdown(f"""
+                <div class='badge-container'>
+                    <span class='{p["s_class"]}'>{p["status"]}</span>
+                    <span class='{p["a_class"]}'>{p["access"]}</span>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown(f"### {p['title']}")
+                
+                # Abas para alternar entre visualização PC e Mobile
+                t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
+                with t1: render_image(p["img_pc"])
+                with t2: render_image(p["img_mob"])
+
+                st.markdown(f"<div class='card-desc'>{p['desc']}</div>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color: {sub_color}; font-size: 0.8rem; margin: 4px 0 8px 0;'>🛠️ Python | Streamlit</p>", unsafe_allow_html=True)
+                st.link_button("🔗 Abrir Aplicação" if "producao" in p["status"].lower() or "abr" in p["url"] else "🔗 Testar Ferramenta", p["url"])
+
+        # Renderização do segundo card da linha (se existir na lista)
+        if i + 1 < len(projects_list):
+            with col2:
+                p = projects_list[i + 1]
+                with st.container(border=True):
+                    st.markdown(f"""
+                    <div class='badge-container'>
+                        <span class='{p["s_class"]}'>{p["status"]}</span>
+                        <span class='{p["a_class"]}'>{p["access"]}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.markdown(f"### {p['title']}")
+                    
+                    t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
+                    with t1: render_image(p["img_pc"])
+                    with t2: render_image(p["img_mob"])
+
+                    st.markdown(f"<div class='card-desc'>{p['desc']}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color: {sub_color}; font-size: 0.8rem; margin: 4px 0 8px 0;'>🛠️ Python | Streamlit</p>", unsafe_allow_html=True)
+                    st.link_button("🔗 Abrir Aplicação" if "producao" in p["status"].lower() else "🔗 Testar Ferramenta", p["url"])
+
+# SEÇÃO 1: Projetos Concluídos (Em Produção)
 st.subheader("🚀 Projetos Concluídos (Em Produção)")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    with st.container(border=True):
-        st.markdown("""
-        <div class='badge-container'>
-            <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
-            <span class='badge-lock'>🔒 RESTRITO</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("### 🏥 GAPP CME")
-        
-        t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
-        with t1:
-            render_image(IMAGES["gapp"])
-        with t2:
-            render_image(IMAGES["gapp_mobile"])
-
-        st.markdown("<div class='card-desc'>Aplicação central desenvolvida para apoiar a organização, controle e os fluxos de trabalho dentro da Central de Material e Esterilização.</div>", unsafe_allow_html=True)
-        st.caption("🛠️ Python | Streamlit")
-        st.link_button("🔗 Abrir Aplicação", "https://gappcccme.streamlit.app/")
-
-with col2:
-    with st.container(border=True):
-        st.markdown("""
-        <div class='badge-container'>
-            <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
-            <span class='badge-lock'>🔒 RESTRITO</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("### 📋 CME Pedidos")
-        
-        t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
-        with t1:
-            render_image(IMAGES["cmepedidos"])
-        with t2:
-            render_image(IMAGES["cmepedidos_mobile"])
-
-        st.markdown("<div class='card-desc'>Sistema voltado para agilizar o controle, registro e o gerenciamento de pedidos de materiais e insumos.</div>", unsafe_allow_html=True)
-        st.caption("🛠️ Python | Streamlit")
-        st.link_button("🔗 Abrir Aplicação", "https://cmepedidos.streamlit.app/")
-
-col3, col4 = st.columns(2)
-
-with col3:
-    with st.container(border=True):
-        st.markdown("""
-        <div class='badge-container'>
-            <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
-            <span class='badge-lock'>🔒 RESTRITO</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("### 🏢 Solicitação de Unidades")
-        
-        t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
-        with t1:
-            render_image(IMAGES["solicitacao"])
-        with t2:
-            render_image(IMAGES["solicitacao_mobile"])
-
-        st.markdown("<div class='card-desc'>Interface intuitiva projetada para facilitar as solicitações de materiais vindas das diversas unidades do hospital para a CME.</div>", unsafe_allow_html=True)
-        st.caption("🛠️ Python | Streamlit")
-        st.link_button("🔗 Abrir Aplicação", "https://solicitacaounidades.streamlit.app/")
-
-with col4:
-    with st.container(border=True):
-        st.markdown("""
-        <div class='badge-container'>
-            <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
-            <span class='badge-public'>🌐 ACESSO LIVRE</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("### 🏷️ Gerador ZPL")
-        
-        t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
-        with t1:
-            render_image(IMAGES["zpl"])
-        with t2:
-            render_image(IMAGES["zpl_mobile"])
-
-        st.markdown("<div class='card-desc'>Ferramenta útil para geração e formatação de códigos ZPL (Zebra), facilitando a impressão de etiquetas de identificação.</div>", unsafe_allow_html=True)
-        st.caption("🛠️ Python | Streamlit")
-        st.link_button("🔗 Testar Ferramenta", "https://geradorzpl.streamlit.app/")
+render_project_grid(PROJETOS_PRODUCAO)
 
 st.divider()
 
-# SEÇÃO 2: PROJETOS EM DESENVOLVIMENTO
+# SEÇÃO 2: Projetos em Desenvolvimento
 st.subheader("🚧 Projetos em Desenvolvimento")
-
-col_dev1, col_dev2 = st.columns(2)
-
-with col_dev1:
-    with st.container(border=True):
-        st.markdown("""
-        <div class='badge-container'>
-            <span class='badge-dev'>🚧 DESENVOLVIMENTO</span>
-            <span class='badge-lock'>🔒 RESTRITO</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("### 🔍 Track CME")
-        
-        t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
-        with t1:
-            render_image(IMAGES["track"])
-        with t2:
-            render_image(IMAGES["track_mobile"])
-
-        st.markdown("<div class='card-desc'>Sistema focado no rastreamento e acompanhamento detalhado de itens e processos dentro da CME, aumentando o controle operacional.</div>", unsafe_allow_html=True)
-        st.caption("🛠️ Python | Streamlit")
-        st.link_button("🔗 Abrir Aplicação", "https://trackcme.streamlit.app/")
-
-with col_dev2:
-    with st.container(border=True):
-        st.markdown("""
-        <div class='badge-container'>
-            <span class='badge-dev'>🚧 DESENVOLVIMENTO</span>
-            <span class='badge-public'>🌐 ACESSO LIVRE</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("### 📄 DocFlow")
-        
-        t1, t2 = st.tabs(["🖥️ PC", "📱 Mobile"])
-        with t1:
-            render_image(IMAGES["docflow"])
-        with t2:
-            render_image(IMAGES["docflow_mobile"])
-
-        st.markdown("<div class='card-desc'>Ferramenta projetada para automatizar a geração, organização e o fluxo de documentos e relatórios institucionais.</div>", unsafe_allow_html=True)
-        st.caption("🛠️ Python | Streamlit")
-        st.link_button("🔗 Testar Ferramenta", "https://docflowgenerator.streamlit.app/")
+render_project_grid(PROJETOS_DESENVOLVIMENTO)
 
 st.divider()
 
+# Seção de Formação Acadêmica e Filosofia de Trabalho
 st.subheader("📚 Minha Formação & Filosofia")
 st.markdown("""
 * **Graduação:** Análise e Desenvolvimento de Sistemas.
@@ -528,9 +584,10 @@ st.markdown("""
 
 st.markdown("---")
 
-st.markdown("""
+# Rodapé com Chamada para Ação / Contato via WhatsApp
+st.markdown(f"""
 <div style='text-align: center; margin-top: 20px;'>
-    <p style='color: #64748b; font-size: 0.85rem; margin-bottom: 8px;'>Deseja uma demonstração dos sistemas restritos?</p>
+    <p style='color: {sub_color}; font-size: 0.85rem; margin-bottom: 8px;'>Deseja uma demonstração dos sistemas restritos?</p>
     <a href='https://wa.me/5511970967963' target='_blank' class='contact-link'>
         💬 Solicitar Demonstração / Contato
     </a>
