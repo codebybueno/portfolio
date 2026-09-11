@@ -4,22 +4,109 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Portfólio | Python & Streamlit - CME</title>
-    
-    <!-- Eruda Console para depuração mobile -->
+
+    <!-- Console de Desenvolvimento Mobile (Eruda) - Descomente as 2 linhas abaixo para depurar no celular -->
+    <!--
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
-
+    -->
+    
     <!-- Stlite Mountable CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.css" />
+
+    <style>
+      /* Tela de Carregamento (Loader) */
+      #custom-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #0f172a;
+        color: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 999999;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid rgba(56, 189, 248, 0.15);
+        border-left-color: #38bdf8;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+        margin-bottom: 16px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .loader-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #f8fafc;
+        margin: 0 0 6px 0;
+      }
+
+      .loader-text {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        max-width: 280px;
+        margin: 0;
+        line-height: 1.4;
+      }
+    </style>
   </head>
   <body style="margin: 0; background-color: #0f172a;">
 
+    <!-- Tela de Carregamento Personalizada -->
+    <div id="custom-loader">
+      <div class="spinner"></div>
+      <h2 class="loader-title">Carregando Portfólio...</h2>
+      <p class="loader-text">Inicializando ambiente Python no seu navegador.</p>
+    </div>
+
+    <!-- Ponto de montagem da aplicação -->
     <div id="root"></div>
 
     <!-- Stlite Mountable JS -->
     <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.js"></script>
 
     <script>
+      // Função para esconder o loader suavemente
+      function hideLoader() {
+        const loader = document.getElementById('custom-loader');
+        if (loader && loader.style.opacity !== '0') {
+          loader.style.opacity = '0';
+          loader.style.transition = 'opacity 0.4s ease';
+          setTimeout(() => {
+            if (loader) loader.style.display = 'none';
+          }, 400);
+        }
+      }
+
+      // Oculta a tela de carregamento assim que o Streamlit carrega o conteúdo principal
+      const observer = new MutationObserver(() => {
+        if (document.querySelector('.stApp')) {
+          hideLoader();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Trava de segurança (caso demore mais de 7s)
+      setTimeout(hideLoader, 7000);
+
+      // Inicialização do Stlite
       stlite.mount({
         requirements: ["streamlit"],
         entrypoint: "app.py",
@@ -33,73 +120,247 @@ st.set_page_config(
     layout="centered"
 )
 
+# Estilização visual avançada (UX/UI)
 st.markdown("""
     <style>
     .stApp {
         background-color: #0f172a;
         color: #f8fafc;
     }
+    
+    h1 {
+        font-size: 1.85rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em;
+        line-height: 1.25 !important;
+    }
+    
+    h2, h3 {
+        color: #f1f5f9 !important;
+    }
+
+    [data-testid="stVerticalBlock"] > div[style*="border"] {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 12px !important;
+        padding: 18px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+    }
+
+    /* Badges de Status Responsivos */
+    .badge-container {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        align-items: center !important;
+        margin-bottom: 10px !important;
+        max-width: 100% !important;
+    }
+
+    .badge-prod {
+        background-color: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        padding: 2px 6px;
+        border-radius: 12px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-dev {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        padding: 2px 6px;
+        border-radius: 12px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-lock {
+        background-color: rgba(148, 163, 184, 0.15);
+        color: #cbd5e1;
+        padding: 2px 6px;
+        border-radius: 12px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-public {
+        background-color: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        padding: 2px 6px;
+        border-radius: 12px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .stLinkButton > a {
+        background-color: #0284c7 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        width: 100%;
+        text-align: center;
+        transition: background-color 0.2s ease;
+    }
+    .stLinkButton > a:hover {
+        background-color: #0369a1 !important;
+    }
+
+    .contact-link {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #1e293b;
+        color: #38bdf8 !important;
+        border: 1px solid #334155;
+        border-radius: 20px;
+        text-decoration: none !important;
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .contact-link:hover {
+        background-color: #334155;
+        color: #7dd3fc !important;
+        border-color: #38bdf8;
+    }
+    
+    .info-box {
+        background-color: rgba(30, 41, 59, 0.7);
+        border-left: 4px solid #38bdf8;
+        padding: 10px 14px;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.85rem;
+        color: #cbd5e1;
+        margin: 15px 0;
+        line-height: 1.4;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center; color: white;'>Olá! Bem-vindo ao meu portfólio</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #94a3b8;'>Formado em Análise e Desenvolvimento de Sistemas. Uso Python e Streamlit para criar automações e sistemas práticos voltados para a rotina da CME (Central de Material e Esterilização) e do hospital.</p>", unsafe_allow_html=True)
+# Cabeçalho Principal
+st.markdown("<h1 style='text-align: center; color: #ffffff;'>Olá! Bem-vindo ao meu portfólio</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 0.95rem; line-height: 1.6;'>Formado em Análise e Desenvolvimento de Sistemas. Uso Python e Streamlit para criar automações e sistemas práticos voltados para a rotina da CME (Central de Material e Esterilização) e do hospital.</p>", unsafe_allow_html=True)
 
 st.divider()
 
+# Sobre a iniciativa
 st.subheader("👋 Sobre este espaço")
 st.write("Embora não atue formalmente na equipe de TI, sempre gostei de colocar a mão na massa para resolver problemas reais da rotina de trabalho. Estes são alguns dos sistemas que desenvolvi por conta própria para otimizar processos internos.")
 
+# Caixa informativa
+st.markdown("""
+<div class='info-box'>
+    🔒 <strong>Aviso de Acesso:</strong> Aplicações internas exigem login. <strong>Gerador ZPL</strong> e <strong>DocFlow</strong> estão abertos para testes.
+</div>
+""", unsafe_allow_html=True)
+
+# Seção de Projetos Concluídos
 st.subheader("🚀 Projetos Concluídos (Em Produção)")
 
-with st.container():
+with st.container(border=True):
+    st.markdown("""
+    <div class='badge-container'>
+        <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
+        <span class='badge-lock'>🔒 RESTRITO</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("### 🏥 GAPP CME")
     st.write("Aplicação central desenvolvida para apoiar a organização, controle e os fluxos de trabalho dentro da Central de Material e Esterilização.")
     st.caption("🛠️ Python | Streamlit")
-    st.link_button("🔗 Acessar Aplicação", "https://gappcccme.streamlit.app/")
+    st.link_button("🔗 Abrir Aplicação", "https://gappcccme.streamlit.app/")
 
-with st.container():
+with st.container(border=True):
+    st.markdown("""
+    <div class='badge-container'>
+        <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
+        <span class='badge-lock'>🔒 RESTRITO</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("### 📋 CME Pedidos")
     st.write("Sistema voltado para agilizar o controle, registro e o gerenciamento de pedidos de materiais e insumos.")
     st.caption("🛠️ Python | Streamlit")
-    st.link_button("🔗 Acessar Aplicação", "https://cmepedidos.streamlit.app/")
+    st.link_button("🔗 Abrir Aplicação", "https://cmepedidos.streamlit.app/")
 
-with st.container():
+with st.container(border=True):
+    st.markdown("""
+    <div class='badge-container'>
+        <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
+        <span class='badge-lock'>🔒 RESTRITO</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("### 🏢 Solicitação de Unidades")
     st.write("Interface intuitiva projetada para facilitar as solicitações de materiais vindas das diversas unidades do hospital para a CME.")
     st.caption("🛠️ Python | Streamlit")
-    st.link_button("🔗 Acessar Aplicação", "https://solicitacaounidades.streamlit.app/")
+    st.link_button("🔗 Abrir Aplicação", "https://solicitacaounidades.streamlit.app/")
 
-with st.container():
+with st.container(border=True):
+    st.markdown("""
+    <div class='badge-container'>
+        <span class='badge-prod'>🟢 EM PRODUÇÃO</span>
+        <span class='badge-public'>🌐 ACESSO LIVRE</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("### 🏷️ Gerador ZPL")
     st.write("Ferramenta útil para geração e formatação de códigos ZPL (Zebra), facilitando a impressão de etiquetas de identificação.")
     st.caption("🛠️ Python | Streamlit")
-    st.link_button("🔗 Acessar Aplicação", "https://geradorzpl.streamlit.app/")
+    st.link_button("🔗 Testar Ferramenta", "https://geradorzpl.streamlit.app/")
 
+# Seção de Projetos em Desenvolvimento
 st.subheader("🚧 Projetos em Desenvolvimento")
 
-with st.container():
+with st.container(border=True):
+    st.markdown("""
+    <div class='badge-container'>
+        <span class='badge-dev'>🚧 DESENVOLVIMENTO</span>
+        <span class='badge-lock'>🔒 RESTRITO</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("### 🔍 Track CME")
     st.write("Sistema focado no rastreamento e acompanhamento detalhado de itens e processos dentro da CME, aumentando o controle operacional.")
-    st.caption("🛠️ Status: Em desenvolvimento ativo")
-    st.link_button("🔗 Testar Versão Atual", "https://trackcme.streamlit.app/")
+    st.caption("🛠️ Python | Streamlit")
+    st.link_button("🔗 Abrir Aplicação", "https://trackcme.streamlit.app/")
 
-with st.container():
+with st.container(border=True):
+    st.markdown("""
+    <div class='badge-container'>
+        <span class='badge-dev'>🚧 DESENVOLVIMENTO</span>
+        <span class='badge-public'>🌐 ACESSO LIVRE</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("### 📄 DocFlow")
     st.write("Ferramenta projetada para automatizar a geração, organização e o fluxo de documentos e relatórios institucionais.")
-    st.caption("🛠️ Status: Em desenvolvimento ativo")
-    st.link_button("🔗 Testar Versão Atual", "https://docflowgenerator.streamlit.app/")
+    st.caption("🛠️ Python | Streamlit")
+    st.link_button("🔗 Testar Ferramenta", "https://docflowgenerator.streamlit.app/")
 
 st.divider()
 
 st.subheader("📚 Minha Formação & Filosofia")
 st.markdown("""
 * **Graduação:** Análise e Desenvolvimento de Sistemas.
-* **Abordagem:** Foco total em utilidade prática e resolução de gargalos operacionais.
+* **Abordagem:** Foco total em utilidade prática e resolução de gargalos operacionais na área da saúde.
 """)
 
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #64748b;'>Criado com Python, Streamlit e Stlite.</p>", unsafe_allow_html=True)
+
+# Rodapé com convite para demonstração
+st.markdown("""
+<div style='text-align: center; margin-top: 20px;'>
+    <p style='color: #64748b; font-size: 0.85rem; margin-bottom: 8px;'>Deseja uma demonstração dos sistemas restritos?</p>
+    <a href='https://wa.me/5511970967963' target='_blank' class='contact-link'>
+        💬 Solicitar Demonstração / Contato
+    </a>
+</div>
+""", unsafe_allow_html=True)
           `
         }
       }, document.getElementById("root"));
