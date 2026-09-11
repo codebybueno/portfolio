@@ -1,24 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Portfólio | Python & Streamlit - CME</title>
     <!-- Stlite CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@0.67.0/build/stlite.css">
-</head>
-<body style="margin: 0; background-color: #0f172a;">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@0.79.0/build/stlite.css" />
+  </head>
+  <body style="margin: 0; background-color: #0f172a;">
 
     <div id="root"></div>
 
     <!-- Stlite JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@stlite/browser@0.67.0/build/stlite.js"></script>
-    <script>
-        stlite.mount({
-            requirements: ["streamlit", "pandas"],
-            entrypoint: "app.py",
-            files: {
-                "app.py": `
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/browser@0.79.0/build/stlite.js"></script>
+
+    <!-- Script Python embutido de forma limpa e segura -->
+    <script type="text/streamlit" data-filename="app.py" data-requirements="[\"streamlit\", \"pandas\"]">
 import streamlit as st
 
 st.set_page_config(
@@ -28,14 +25,14 @@ st.set_page_config(
 )
 
 # Estilização visual limpa e amigável
-st.markdown(\"\"\"
+st.markdown("""
     <style>
     .stApp {
         background-color: #0f172a;
         color: #f8fafc;
     }
     </style>
-\"\"\", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Cabeçalho Pessoal
 st.markdown("<h1 style='text-align: center; color: white;'>Olá! Bem-vindo ao meu portfólio</h1>", unsafe_allow_html=True)
@@ -92,18 +89,13 @@ with st.container(border=True):
 st.divider()
 
 st.subheader("📚 Minha Formação & Filosofia")
-st.markdown(\"\"\"
+st.markdown("""
 * **Graduação:** Análise e Desenvolvimento de Sistemas.
 * **Abordagem:** Foco total em utilidade prática e resolução de gargalos operacionais.
-\"\"\")
+""")
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #64748b;'>Criado com Python, Streamlit e Stlite.</p>", unsafe_allow_html=True)
-                `
-            }
-        },
-        document.getElementById("root")
-    );
     </script>
 </body>
 </html>
