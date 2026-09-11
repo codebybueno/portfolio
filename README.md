@@ -26,6 +26,7 @@ As ferramentas a seguir rodam integradas ao ecossistema Streamlit Cloud:
 **🚧 Em Desenvolvimento**
 
 * **Track CME:** Sistema voltado ao rastreamento e acompanhamento detalhado de itens e processos na CME, visando maior rigor operacional.
+* **DocFlow:** Ferramenta projetada para automatizar a geração, organização e o fluxo de documentos e relatórios institucionais.
 
 ---
 
