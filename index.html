@@ -9,29 +9,22 @@
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
 
-    <!-- Stlite CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser/build/stlite.css" />
+    <!-- Stlite Mountable CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.css" />
   </head>
   <body style="margin: 0; background-color: #0f172a;">
 
     <div id="root"></div>
 
-    <!-- Stlite JS Principal -->
-    <script src="https://cdn.jsdelivr.net/npm/@stlite/browser/build/stlite.js"></script>
+    <!-- Stlite Mountable JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.js"></script>
 
     <script>
-      // Garante que o script só executa após o carregamento completo dos arquivos
-      window.addEventListener('load', function() {
-        if (typeof stlite === 'undefined') {
-          console.error("A biblioteca Stlite não pôde ser carregada. Verifique a conexão com a internet.");
-          return;
-        }
-
-        stlite.mount({
-          requirements: ["streamlit"],
-          entrypoint: "app.py",
-          files: {
-            "app.py": `
+      stlite.mount({
+        requirements: ["streamlit"],
+        entrypoint: "app.py",
+        files: {
+          "app.py": `
 import streamlit as st
 
 st.set_page_config(
@@ -107,10 +100,9 @@ st.markdown("""
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #64748b;'>Criado com Python, Streamlit e Stlite.</p>", unsafe_allow_html=True)
-            `
-          }
-        }, document.getElementById("root"));
-      });
+          `
+        }
+      }, document.getElementById("root"));
     </script>
   </body>
 </html>
